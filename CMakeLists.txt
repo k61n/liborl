@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-project(liborl VERSION 0.3.0)
+project(liborl
+    VERSION 0.3.0
+    LANGUAGES CXX)
 include(CTest)
 
 add_compile_options(-fPIC)
@@ -66,3 +68,16 @@ if (BUILD_TESTING)
     enable_testing()
     add_subdirectory(test)
 endif ()
+
+## Packaging
+set(CPACK_PACKAGE_VENDOR "FZJ GmbH")
+set(CPACK_GENERATOR "DEB;TGZ")
+set(CPACK_PACKAGE_VERSION ${liborl_VERSION})
+set(CPACK_SYSTEM_NAME ${CMAKE_HOST_SYSTEM_PROCESSOR})
+
+# Debian versions require a dash
+set(CPACK_DEBIAN_PACKAGE_VERSION ${CPACK_PACKAGE_VERSION}-1)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "FZJ GmbH")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libboost-dev")
+#set(CPACK_DEBIAN_PACKAGE_CONFLICTS "")
+include(CPack)
