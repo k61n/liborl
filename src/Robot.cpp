@@ -55,9 +55,9 @@ std::array<double, 7> Robot::get_current_Joints() {
     return robot.readOnce().q;
 }
 
-Robot::Robot(const std::string &robot_name) : robot(robot_name), gripper(robot_name), model(robot.loadModel()) {
+Robot::Robot(const std::string &robot_name) : robot(robot_name, franka::RealtimeConfig::kEnforce), gripper(robot_name), model(robot.loadModel()) {
     robot.setGuidingMode({true, true, true, true, true, true}, false);
-//    robot.automaticErrorRecovery();
+    robot.automaticErrorRecovery();
 
 
     // Set additional parameters always before the control loop, NEVER in the control loop!
