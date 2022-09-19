@@ -108,84 +108,81 @@ Robot::impedance_mode(double translational_stiffness, double rotational_stiffnes
             Eigen::MatrixXd::Identity(3, 3);
     damping.bottomRightCorner(3, 3) << 2.0 * sqrt(rotational_stiffness) *
             Eigen::MatrixXd::Identity(3, 3);
-    try {
-        // connect to robot
-        franka::RobotState initial_state = robot.readOnce();
-        orl::Pose initial_pose(initial_state.O_T_EE);
-        // equilibrium point is the initial position
+
+    // connect to robot
+    franka::RobotState initial_state = robot.readOnce();
+    orl::Pose initial_pose(initial_state.O_T_EE);
+    // equilibrium point is the initial position
 //                Eigen::Affine3d initial_transform(Eigen::Matrix4d::Map(desired_attractor_pose.to_matrix().data()));
 //                Eigen::Vector3d position_d(initial_transform.translation());
 //                Eigen::Quaterniond orientation_d(initial_transform.linear());
-        // set collision behavior
-        robot.setCollisionBehavior({{100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
-                                   {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
-                                   {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
-                                   {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0}});
-        // define callback for the torque control loop
-        double time = 0;
-        std::function<franka::Torques(const franka::RobotState &, franka::Duration)>
-                impedance_control_callback = [&](const franka::RobotState &robot_state,
-                                                 franka::Duration duration) -> franka::Torques {
-            // get state variables
-            time += duration.toSec();
-            if (time == 0) {
-                initial_pose.set(robot_state.O_T_EE_c);
-                // Create 1D interpolation progress variable
-                Eigen::Vector3d init1, fin1;
-                init1 << 0, 0, 0;
-                fin1 << 1, 1, 1;
+    // set collision behavior
+    robot.setCollisionBehavior({{100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
+                               {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
+                               {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
+                               {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0}});
+    // define callback for the torque control loop
+    double time = 0;
+    std::function<franka::Torques(const franka::RobotState &, franka::Duration)>
+            impedance_control_callback = [&](const franka::RobotState &robot_state,
+                                             franka::Duration duration) -> franka::Torques {
+        // get state variables
+        time += duration.toSec();
+        if (time == 0) {
+            initial_pose.set(robot_state.O_T_EE_c);
+            // Create 1D interpolation progress variable
+            Eigen::Vector3d init1, fin1;
+            init1 << 0, 0, 0;
+            fin1 << 1, 1, 1;
 
-            }
-            const double progress = time / move_to_attractor_duration;
-            PoseGeneratorInput generatorInput{progress, initial_pose, robot_state};
+        }
+        const double progress = time / move_to_attractor_duration;
+        PoseGeneratorInput generatorInput{progress, initial_pose, robot_state};
 
-            orl::Pose new_pose(attractor_pose_generator(generatorInput));
-            Eigen::Affine3d progress_transform(Eigen::Matrix4d::Map(new_pose.to_matrix().data()));
-            Eigen::Vector3d position_d(progress_transform.translation());
-            Eigen::Quaterniond orientation_d(progress_transform.linear());
-            std::array<double, 7> coriolis_array = model.coriolis(robot_state);
-            std::array<double, 42> jacobian_array =
-                    model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
-            // convert to Eigen
-            Eigen::Map<const Eigen::Matrix<double, 7, 1>> coriolis(coriolis_array.data());
-            Eigen::Map<const Eigen::Matrix<double, 6, 7>> jacobian(jacobian_array.data());
-            Eigen::Map<const Eigen::Matrix<double, 7, 1>> q(robot_state.q.data());
-            Eigen::Map<const Eigen::Matrix<double, 7, 1>> dq(robot_state.dq.data());
+        orl::Pose new_pose(attractor_pose_generator(generatorInput));
+        Eigen::Affine3d progress_transform(Eigen::Matrix4d::Map(new_pose.to_matrix().data()));
+        Eigen::Vector3d position_d(progress_transform.translation());
+        Eigen::Quaterniond orientation_d(progress_transform.linear());
+        std::array<double, 7> coriolis_array = model.coriolis(robot_state);
+        std::array<double, 42> jacobian_array =
+                model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
+        // convert to Eigen
+        Eigen::Map<const Eigen::Matrix<double, 7, 1>> coriolis(coriolis_array.data());
+        Eigen::Map<const Eigen::Matrix<double, 6, 7>> jacobian(jacobian_array.data());
+        Eigen::Map<const Eigen::Matrix<double, 7, 1>> q(robot_state.q.data());
+        Eigen::Map<const Eigen::Matrix<double, 7, 1>> dq(robot_state.dq.data());
 
-            Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
-            Eigen::Vector3d position(transform.translation());
-            Eigen::Quaterniond orientation(transform.linear());
-            // compute error to desired equilibrium pose
-            // position error
-            Eigen::Matrix<double, 6, 1> error;
-            error.head(3) << position - position_d;
-            // orientation error
-            // "difference" quaternion
-            if (orientation_d.coeffs().dot(orientation.coeffs()) < 0.0) {
-                orientation.coeffs() << -orientation.coeffs();
-            }
-            // "difference" quaternion
-            Eigen::Quaterniond error_quaternion(orientation.inverse() * orientation_d);
-            error.tail(3) << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
-            // Transform to base frame
-            error.tail(3) << -transform.linear() * error.tail(3);
-            // compute control
-            Eigen::VectorXd tau_task(7), tau_d(7);
-            // Spring damper system with damping ratio=1
-            tau_task << jacobian.transpose() * (-stiffness * error - damping * (jacobian * dq));
-            tau_d << tau_task + coriolis;
-            std::array<double, 7> tau_d_array{};
-            Eigen::VectorXd::Map(&tau_d_array[0], 7) = tau_d;
-            if (time > max_time) {
-                return franka::MotionFinished(franka::Torques(tau_d_array));
-            }
-            return tau_d_array;
-        };
-        robot.control(impedance_control_callback);
-    } catch (const franka::Exception &ex) {
-        // print exception
-        std::cout << ex.what() << std::endl;
-    }
+        Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
+        Eigen::Vector3d position(transform.translation());
+        Eigen::Quaterniond orientation(transform.linear());
+        // compute error to desired equilibrium pose
+        // position error
+        Eigen::Matrix<double, 6, 1> error;
+        error.head(3) << position - position_d;
+        // orientation error
+        // "difference" quaternion
+        if (orientation_d.coeffs().dot(orientation.coeffs()) < 0.0) {
+            orientation.coeffs() << -orientation.coeffs();
+        }
+        // "difference" quaternion
+        Eigen::Quaterniond error_quaternion(orientation.inverse() * orientation_d);
+        error.tail(3) << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
+        // Transform to base frame
+        error.tail(3) << -transform.linear() * error.tail(3);
+        // compute control
+        Eigen::VectorXd tau_task(7), tau_d(7);
+        // Spring damper system with damping ratio=1
+        tau_task << jacobian.transpose() * (-stiffness * error - damping * (jacobian * dq));
+        tau_d << tau_task + coriolis;
+        std::array<double, 7> tau_d_array{};
+        Eigen::VectorXd::Map(&tau_d_array[0], 7) = tau_d;
+        if (time > max_time) {
+            return franka::MotionFinished(franka::Torques(tau_d_array));
+        }
+        return tau_d_array;
+    };
+    robot.control(impedance_control_callback);
+
     setDefaultBehavior();
 }
 
@@ -202,25 +199,25 @@ void Robot::move_cartesian(PoseGenerator cartesian_pose_generator, double max_ti
 
 //    std::cout << "Start motion..." << std::endl;
     bool should_stop = false;
-    try {
-        robot.control(
-                [=, &initial_elbow, &time, &max_time, &initial_pose, &cartesian_pose_generator, &should_stop](
-                        const franka::RobotState &state,
-                        franka::Duration time_step) -> franka::CartesianPose {
-                    time += time_step.toSec();
-                    if (time == 0) {
-                        initial_pose.set(state.O_T_EE_c);
-                        initial_elbow = state.elbow_c;
-                    }
-                    auto new_elbow = initial_elbow;
-                    const double progress = time / max_time;
-                    PoseGeneratorInput generatorInput{progress, initial_pose, state};
-                    Pose new_pose_pose = cartesian_pose_generator(generatorInput);
-                    if (time == 0) {
+
+    robot.control(
+            [=, &initial_elbow, &time, &max_time, &initial_pose, &cartesian_pose_generator, &should_stop](
+                    const franka::RobotState &state,
+                    franka::Duration time_step) -> franka::CartesianPose {
+                time += time_step.toSec();
+                if (time == 0) {
+                    initial_pose.set(state.O_T_EE_c);
+                    initial_elbow = state.elbow_c;
+                }
+                auto new_elbow = initial_elbow;
+                const double progress = time / max_time;
+                PoseGeneratorInput generatorInput{progress, initial_pose, state};
+                Pose new_pose_pose = cartesian_pose_generator(generatorInput);
+                if (time == 0) {
 //                        std::cout << "desired pose: " << new_pose_pose.toString() << std::endl;
 //                        std::cout << "start: " << initial_pose.toString() << std::endl;
-                    }
-                    std::array<double, 16> new_pose = new_pose_pose.to_matrix();
+                }
+                std::array<double, 16> new_pose = new_pose_pose.to_matrix();
 //                    std::cout << new_pose_pose.toString() << std::endl << std::endl;
 //                    std::cout << Pose(state.O_T_EE).toString() << std::endl << std::endl;
 //                    for (int i = 0; i < 4; i++) {
@@ -238,43 +235,33 @@ void Robot::move_cartesian(PoseGenerator cartesian_pose_generator, double max_ti
 //                    std::cout << a.norm() << " " << b.norm() << " " << c.norm() << std::endl;
 //                    std::cout << std::endl;
 
-                    // Print the xyz-forces at the EE in every step of  control loop:
+                // Print the xyz-forces at the EE in every step of  control loop:
 //                    double force_norm = sqrt(state.O_F_ext_hat_K[0] * state.O_F_ext_hat_K[0] +
 //                                             state.O_F_ext_hat_K[1] * state.O_F_ext_hat_K[1] +
 //                                             state.O_F_ext_hat_K[2] * state.O_F_ext_hat_K[2]);
 //                    std::cout << "Force: " << force_norm << std::endl;
-                    if (elbow.is_initialized()) {
-                        new_elbow[0] += (elbow.value() - initial_elbow[0]) * (1 - std::cos(M_PI * progress)) / 2.0;
-                    }
-                    if (stop_condition.is_initialized()) {
-                        should_stop = stop_condition.value()(generatorInput);
-
-
-                    }
-                    if (time >= max_time or should_stop) {
-                        if (should_stop) {
+                if (elbow.is_initialized()) {
+                    new_elbow[0] += (elbow.value() - initial_elbow[0]) * (1 - std::cos(M_PI * progress)) / 2.0;
+                }
+                if (stop_condition.is_initialized()) {
+                    should_stop = stop_condition.value()(generatorInput);
+                }
+                if (time >= max_time or should_stop) {
+                    if (should_stop) {
 //                            std::cout << "Stopped motion by stop condition" << std::endl;
-                        }
+                    }
 //                        std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
-                        if (elbow.is_initialized()) {
-                            return franka::MotionFinished({new_pose, new_elbow});
-                        }
-                        return franka::MotionFinished(new_pose);
-                    }
                     if (elbow.is_initialized()) {
-                        return {new_pose, new_elbow};
+                        return franka::MotionFinished({new_pose, new_elbow});
                     }
-                    return new_pose;
-                }, franka::ControllerMode::kCartesianImpedance);
-    } catch (franka::Exception exception) {
-        std::cout << exception.what() << std::endl;
-        if (should_stop) {
-            std::cout << "robot has stopped due to StopCondition" << std::endl;
-            robot.automaticErrorRecovery();
-        } else {
-            throw std::move(exception);
-        }
-    }
+                    return franka::MotionFinished(new_pose);
+                }
+                if (elbow.is_initialized()) {
+                    return {new_pose, new_elbow};
+                }
+                return new_pose;
+            }, franka::ControllerMode::kCartesianImpedance);
+
 
 }
 
