@@ -61,8 +61,10 @@ install(EXPORT orlTargets
         NAMESPACE orl::
         DESTINATION lib/cmake/orl
         )
-add_subdirectory(examples)
-if (BUILD_TESTING)
+
+option(BUILD_TESTS "Build tests" OFF)
+if (BUILD_TESTS)
+    add_subdirectory(examples)
     enable_testing()
     add_subdirectory(test)
 endif ()
