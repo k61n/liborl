@@ -1,0 +1,30 @@
+Source: liborl
+Priority: optional
+Maintainer: Konstantin Kholostov <k.kholostov@fz-juelich.de>
+Build-Depends: debhelper (>=13~),
+ cmake,
+ libboost-dev,
+ libeigen3-dev,
+ libfranka-dev
+Standards-Version: 4.5.1
+Section: libs
+
+Package: liborl
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: High level motion planning library for Franka Emika Panda robots
+ LibORL is a high level motion planning library for Franka Emika Panda robots.
+ It is a wrapper around libfranka which provides simple to use motion
+ functionality in cartesian space.
+
+Package: liborl-dev
+Architecture: any
+Section: libdevel
+Depends: liborl (= ${binary:Version}), libboost-dev, libeigen3-dev, libfranka-dev,
+ ${misc:Depends}
+Description: High level motion planning library for Franka Emika Panda robots
+ LibORL is a high level motion planning library for Franka Emika Panda robots.
+ It is a wrapper around libfranka which provides simple to use motion
+ functionality in cartesian space.
+ .
+ This package contains the development files.
