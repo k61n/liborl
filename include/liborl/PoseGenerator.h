@@ -11,8 +11,15 @@
 
 
 #include <franka/robot_state.h>
+
+#ifdef __linux__
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
+#elif __APPLE__
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#endif
+
 #include <liborl/Pose.h>
 #include <boost/optional.hpp>
 #include <liborl/Frame.h>

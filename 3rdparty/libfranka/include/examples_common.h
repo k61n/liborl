@@ -4,7 +4,11 @@
 
 #include <array>
 
+#ifdef __linux__
 #include <eigen3/Eigen/Core>
+#elif __APPLE__
+#include <Eigen/Core>
+#endif
 
 #include <franka/control_types.h>
 #include <franka/duration.h>
