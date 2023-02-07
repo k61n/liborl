@@ -9,7 +9,7 @@ add_compile_options(-fPIC)
 
 add_compile_options(-Wall -Wextra)
 find_package(Eigen3 REQUIRED)
-
+find_package(Boost REQUIRED)
 find_package(Franka REQUIRED)
 message("libfranka version: ${Franka_VERSION}")
 
@@ -28,6 +28,8 @@ target_include_directories(orl
 
 target_link_libraries(orl PUBLIC
         Franka::Franka
+        Eigen3::Eigen
+        Boost::boost
         )
 include(GNUInstallDirs)
 set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/orl)
