@@ -13,6 +13,9 @@ find_package(Boost REQUIRED)
 find_package(Franka REQUIRED)
 message("libfranka version: ${Franka_VERSION}")
 
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${EIGEN3_INCLUDE_DIR})
+
 add_library(orl SHARED
         src/Robot.cpp
         3rdparty/libfranka/examples_common.cpp
@@ -28,8 +31,6 @@ target_include_directories(orl
 
 target_link_libraries(orl PUBLIC
         Franka::Franka
-        Eigen3::Eigen
-        Boost::boost
         )
 include(GNUInstallDirs)
 set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/orl)
