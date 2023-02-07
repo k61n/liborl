@@ -9,9 +9,16 @@
 #ifndef LIBORL_POSE_H
 #define LIBORL_POSE_H
 
+#include <vector>
 #include <memory>
-#include <eigen3/Eigen/Eigen>
+
+#ifdef __linux__
+#include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
+#elif __APPLE__
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#endif
 
 namespace orl {
 

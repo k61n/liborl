@@ -9,8 +9,14 @@
 #ifndef LIBORL_GEOMETRY_MATH_H
 #define LIBORL_GEOMETRY_MATH_H
 
+#ifdef __linux__
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
+#elif __APPLE__
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#endif
+
 #include <iostream>
 #include <cmath>
 #include <vector>
