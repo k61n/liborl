@@ -171,7 +171,7 @@ Robot::impedance_mode(double translational_stiffness, double rotational_stiffnes
         }
         return tau_d_array;
     };
-    robot.control(impedance_control_callback);
+    robot.control(impedance_control_callback, false);
 
     setDefaultBehavior();
 }
@@ -218,7 +218,7 @@ void Robot::move_cartesian(PoseGenerator cartesian_pose_generator, double max_ti
                     return {new_pose, new_elbow};
                 }
                 return new_pose;
-            }, franka::ControllerMode::kCartesianImpedance);
+            }, franka::ControllerMode::kCartesianImpedance, false);
 }
 
 void Robot::move_circle_xy(const Position &center, double rotation_angle, double max_time,
@@ -389,5 +389,5 @@ void Robot::joint_motion(const std::function<void(const franka::RobotState&)>& c
     robot.control([&motion_generator, &callback](const franka::RobotState& state, franka::Duration period) {
         callback(state);
         return motion_generator(state, period);
-    });
+    }, franka::ControllerMode::kJointImpedance, false);
 }
