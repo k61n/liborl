@@ -1,2 +1,6 @@
 /doxygen/html/
 /doxygen/latex/
+.idea/
+build/
+cmake-build*
+CMakeLists.txt.user
