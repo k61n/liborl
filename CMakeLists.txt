@@ -7,9 +7,12 @@ add_compile_options(-fPIC)
 
 add_compile_options(-Wall -Wextra)
 find_package(Eigen3 REQUIRED)
-
+find_package(Boost REQUIRED CONFIG)
 find_package(Franka REQUIRED)
 message("libfranka version: ${Franka_VERSION}")
+
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 add_library(orl SHARED
         src/Robot.cpp
