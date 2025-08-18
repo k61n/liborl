@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.16)
 
 project(liborl VERSION 0.3.0)
 include(CTest)
@@ -9,7 +9,7 @@ add_compile_options(-Wall -Wextra)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED CONFIG)
 find_package(Franka REQUIRED)
-message("libfranka version: ${Franka_VERSION}")
+message(STATUS "libfranka version: ${Franka_VERSION}")
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIR})
