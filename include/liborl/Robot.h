@@ -77,7 +77,8 @@ namespace orl {
          * @param max_time duration of the trajectory in seconds
           * @param stop_condition a Stop condition which stops the movement
          */
-        void relative_cart_motion(double x, double y, double z, double max_time = 10,
+        void relative_cart_motion(const std::function<void(const franka::RobotState&)>& callback,
+                                  double x, double y, double z, double max_time = 10,
                                   const boost::optional<StopCondition> &stop_condition = boost::none);
 
         /**
@@ -90,7 +91,8 @@ namespace orl {
          * @param max_time duration of the trajectory in seconds
          * @param stop_condition a Stop condition which stops the movement
          */
-        void absolute_cart_motion(double x, double y, double z, double max_time = 10,
+        void absolute_cart_motion(const std::function<void(const franka::RobotState&)>& callback,
+                                  double x, double y, double z, double max_time = 10,
                                   const boost::optional<StopCondition> &stop_condition = boost::none);
 
         /**
@@ -171,9 +173,12 @@ namespace orl {
          * @param stop_condition a Stop condition which stops the movement
          * @param elbow desired elbow configuration
          */
-        void move_cartesian(PoseGenerator cartesian_pose_generator, double max_time,
+        void move_cartesian(PoseGenerator cartesian_pose_generator,
+                            double max_time,
                             const boost::optional<StopCondition> &stop_condition = boost::none,
-                            boost::optional<double> elbow = boost::none);
+                            boost::optional<double> elbow = boost::none,
+                            const std::function<void(const franka::RobotState&)>& callback = [](const franka::RobotState&){}
+        );
 
         /**
          * lets the robot move in a circle on the x-y-plane.
@@ -241,7 +246,8 @@ namespace orl {
          * @param q_goal joint states
          * @param speed_factor value between 0 and 1 as factor of the maximum speed
          */
-        void joint_motion(std::array<double, 7> q_goal, double speed_factor);
+        void joint_motion(const std::function<void(const franka::RobotState&)>& callback,
+                          std::array<double, 7> q_goal, double speed_factor);
 
         /**
          * This function blocks until a certain amount of force is applied in a given direction
@@ -304,7 +310,6 @@ namespace orl {
          */
         void setDefaultBehavior();
 
-
         /**
          * moves the robot circle on a circle given a center and a given plane of the moving
          * direction and the direction to the center.
@@ -320,8 +325,6 @@ namespace orl {
         void move_circle(const Position &center, double rotation_angle, double max_time, Plane plane,
                          const boost::optional<OrientationGenerator> &maybe_orientation_generator,
                          const boost::optional<StopCondition> &stop_condition = boost::none);
-
-
     };
 }
 #endif //LIBORL_ROBOT_H

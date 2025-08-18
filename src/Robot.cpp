@@ -13,12 +13,12 @@
 using namespace orl;
 
 void
-Robot::relative_cart_motion(double x, double y, double z, const double max_time,
+Robot::relative_cart_motion(const std::function<void(const franka::RobotState&)>& callback,
+                            double x, double y, double z, const double max_time,
                             const boost::optional<StopCondition> &stop_condition) {
     PoseGenerator pose_generator = PoseGenerators::RelativeMotion(Position(x, y, z), Frame::RobotBase);
     apply_speed_profile(pose_generator);
-    move_cartesian(pose_generator, max_time, stop_condition);
-
+    move_cartesian(pose_generator, max_time, stop_condition, boost::none, callback);
 }
 
 
@@ -191,7 +191,8 @@ void Robot::impedance_mode(double translational_stiffness, double rotational_sti
 }
 
 void Robot::move_cartesian(PoseGenerator cartesian_pose_generator, double max_time,
-                           const boost::optional<StopCondition> &stop_condition, boost::optional<double> elbow) {
+                           const boost::optional<StopCondition> &stop_condition, boost::optional<double> elbow,
+                           const std::function<void(const franka::RobotState&)>& callback) {
     Pose initial_pose(robot.readOnce().O_T_EE_c);
     std::array<double, 2> initial_elbow;
 
@@ -204,6 +205,7 @@ void Robot::move_cartesian(PoseGenerator cartesian_pose_generator, double max_ti
             [=, &initial_elbow, &time, &max_time, &initial_pose, &cartesian_pose_generator, &should_stop](
                     const franka::RobotState &state,
                     franka::Duration time_step) -> franka::CartesianPose {
+                callback(state);
                 time += time_step.toSec();
                 if (time == 0) {
                     initial_pose.set(state.O_T_EE_c);
@@ -448,14 +450,19 @@ void Robot::setLoad(const Payload &load) {
     this->robot.setLoad(payload.mass, payload.pos_wrt_flange, payload.inertia_matrix);
 }
 
-void Robot::absolute_cart_motion(double x, double y, double z, double max_time,
+void Robot::absolute_cart_motion(const std::function<void(const franka::RobotState&)>& callback,
+                                 double x, double y, double z, double max_time,
                                  const boost::optional<StopCondition> &stop_condition) {
     PoseGenerator pose_generator = PoseGenerators::AbsoluteMotion(Position(x, y, z), Frame::RobotBase);
     apply_speed_profile(pose_generator);
-    move_cartesian(pose_generator, max_time, stop_condition);
+    move_cartesian(pose_generator, max_time, stop_condition, boost::none, callback);
 }
 
-void Robot::joint_motion(std::array<double, 7> q_goal, double speed_factor) {
+void Robot::joint_motion(const std::function<void(const franka::RobotState&)>& callback,
+                         std::array<double, 7> q_goal, double speed_factor) {
     MotionGenerator motion_generator(speed_factor, q_goal);
-    robot.control(motion_generator);
+    robot.control([&motion_generator, &callback](const franka::RobotState& state, franka::Duration period) {
+        callback(state);
+        return motion_generator(state, period);
+    });
 }
