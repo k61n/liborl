@@ -1,5 +1,5 @@
 // Copyright (c) 2017 Franka Emika GmbH
-// Use of this source code is governed by the Apache-2.0 license, see LICENSE-APACHE
+// Use of this source code is governed by the Apache-2.0 license, see LICENSE
 #include "examples_common.h"
 
 #include <algorithm>
@@ -9,7 +9,7 @@
 #include <franka/exception.h>
 #include <franka/robot.h>
 
-void setDefaultBehavior(franka::Robot &robot) {
+void setDefaultBehavior(franka::Robot& robot) {
     robot.setCollisionBehavior(
             {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0}}, {{20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0}},
             {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}}, {{10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0}},
@@ -33,7 +33,7 @@ MotionGenerator::MotionGenerator(double speed_factor, const std::array<double, 7
     q_1_.setZero();
 }
 
-bool MotionGenerator::calculateDesiredValues(double t, Vector7d *delta_q_d) const {
+bool MotionGenerator::calculateDesiredValues(double t, Vector7d* delta_q_d) const {
     Vector7i sign_delta_q;
     sign_delta_q << delta_q_.cwiseSign().cast<int>();
     Vector7d t_d = t_2_sync_ - t_1_sync_;
@@ -111,7 +111,7 @@ void MotionGenerator::calculateSynchronizedValues() {
     }
 }
 
-franka::JointPositions MotionGenerator::operator()(const franka::RobotState &robot_state,
+franka::JointPositions MotionGenerator::operator()(const franka::RobotState& robot_state,
                                                    franka::Duration period) {
     time_ += period.toSec();
 
