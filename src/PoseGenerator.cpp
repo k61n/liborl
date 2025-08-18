@@ -26,7 +26,7 @@ orl::generate_pose_generator(const PositionGenerator &position_generator,
 OrientationGenerator
 orl::generate_constant_orientation_orientation_generator(const boost::optional<Eigen::Quaterniond> &orientation) {
     if (orientation.is_initialized()) {
-        return [=](const PoseGeneratorInput &input) -> Eigen::Quaterniond {
+        return [=](const PoseGeneratorInput &) -> Eigen::Quaterniond {
             return orientation.value();
         };
     }
@@ -48,7 +48,7 @@ OrientationGenerator orl::generate_angle_axis_orientation_generator(const Eigen:
 
 PositionGenerator orl::generate_constant_position_position_generator(const boost::optional<Position> &position) {
     if (position.is_initialized()) {
-        return [=](const PoseGeneratorInput &input) -> Eigen::Vector3d {
+        return [=](const PoseGeneratorInput &) -> Eigen::Vector3d {
             return position.value();
         };
     }
