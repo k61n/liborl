@@ -1,3 +1,12 @@
+liborl (0.4.0) unstable; urgency=medium
+
+  * Maintenance updates
+  * Handling of exceptions is removed
+  * Pass callback functions to libfranka API
+  * integrate `Disable rate limiter` PR https://github.com/marcbone/liborl/pull/4
+
+ -- Konstantin Kholostov <k.kholostov@fz-juelich.de>  Fri, 29 Aug 2025 15:40:00 +0200
+
 liborl (0.3.0) unstable; urgency=medium
 
   * Initial release
