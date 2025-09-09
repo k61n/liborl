@@ -184,11 +184,14 @@ void Robot::move_cartesian(PoseGenerator cartesian_pose_generator, double max_ti
                            const boost::optional<StopCondition> &stop_condition, boost::optional<double> elbow,
                            const std::function<void(const franka::RobotState&)>& callback) {
     Pose initial_pose(robot.readOnce().O_T_EE_c);
-    std::array<double, 2> initial_elbow;
+    std::array<double, 2> initial_elbow{};
     double time = 0.0;
     bool should_stop = false;
+    std::array<double, 2> new_elbow{};
+    PoseGeneratorInput generatorInput{};
+    Pose new_pose{};
     robot.control(
-            [=, &initial_elbow, &time, &max_time, &initial_pose, &cartesian_pose_generator, &should_stop](
+            [=, &initial_elbow, &time, &max_time, &initial_pose, &cartesian_pose_generator, &should_stop, &new_elbow, &generatorInput, &new_pose](
                     const franka::RobotState &state,
                     franka::Duration time_step) -> franka::CartesianPose {
                 callback(state);
@@ -197,11 +200,13 @@ void Robot::move_cartesian(PoseGenerator cartesian_pose_generator, double max_ti
                     initial_pose.set(state.O_T_EE_c);
                     initial_elbow = state.elbow_c;
                 }
-                auto new_elbow = initial_elbow;
+                new_elbow[0] = initial_elbow[0];
+                new_elbow[1] = initial_elbow[1];
                 const double progress = time / max_time;
-                PoseGeneratorInput generatorInput{progress, initial_pose, state};
-                Pose new_pose_pose = cartesian_pose_generator(generatorInput);
-                std::array<double, 16> new_pose = new_pose_pose.to_matrix();
+                generatorInput.progress = progress;
+                generatorInput.initial_pose = initial_pose;
+                generatorInput.state = state;
+                new_pose = cartesian_pose_generator(generatorInput);
                 if (elbow.is_initialized()) {
                     new_elbow[0] += (elbow.value() - initial_elbow[0]) * (1 - std::cos(M_PI * progress)) / 2.0;
                 }
@@ -210,14 +215,14 @@ void Robot::move_cartesian(PoseGenerator cartesian_pose_generator, double max_ti
                 }
                 if (time >= max_time or should_stop) {
                     if (elbow.is_initialized()) {
-                        return franka::MotionFinished({new_pose, new_elbow});
+                        return franka::MotionFinished({new_pose.to_matrix(), new_elbow});
                     }
-                    return franka::MotionFinished(new_pose);
+                    return franka::MotionFinished(new_pose.to_matrix());
                 }
                 if (elbow.is_initialized()) {
-                    return {new_pose, new_elbow};
+                    return {new_pose.to_matrix(), new_elbow};
                 }
-                return new_pose;
+                return new_pose.to_matrix();
             }, franka::ControllerMode::kCartesianImpedance, false);
 }
 
