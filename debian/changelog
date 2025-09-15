@@ -1,3 +1,9 @@
+liborl (0.4.1) unstable; urgency=medium
+
+  * control loops in cartesian motion have less initializations
+
+ -- Konstantin Kholostov <k.kholostov@fz-juelich.de>  Mon, 15 Sep 2025 15:55:00 +0200
+
 liborl (0.4.0) unstable; urgency=medium
 
   * Maintenance updates
