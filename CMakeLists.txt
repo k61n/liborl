@@ -41,10 +41,10 @@ install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(TARGETS orl
         EXPORT orlTargets
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         )
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -57,12 +57,12 @@ configure_package_config_file(cmake/orlConfig.cmake.in
         INSTALL_DESTINATION ${INSTALL_CONFIGDIR})
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/orlConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/orlConfigVersion.cmake"
-        DESTINATION lib/cmake/orl
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/orl
         )
 install(EXPORT orlTargets
         FILE orlTargets.cmake
         NAMESPACE orl::
-        DESTINATION lib/cmake/orl
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/orl
         )
 
 option(BUILD_TESTS "Build tests" OFF)
