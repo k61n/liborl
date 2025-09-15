@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(liborl VERSION 0.4.1)
+project(liborl VERSION 0.4.2)
 include(CTest)
 
 add_compile_options(-fPIC)
