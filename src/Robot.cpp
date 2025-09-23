@@ -49,16 +49,15 @@ std::array<double, 7> Robot::get_current_Joints() {
     return robot.readOnce().q;
 }
 
-Robot::Robot(const std::string &robot_name) : robot(robot_name, franka::RealtimeConfig::kEnforce), gripper(robot_name), model(robot.loadModel()) {
+Robot::Robot(const std::string &robot_name, franka::RealtimeConfig realtime_config) : robot(robot_name, realtime_config), gripper(robot_name), model(robot.loadModel()) {
     robot.setGuidingMode({true, true, true, true, true, true}, false);
     robot.automaticErrorRecovery();
-
 
     // Set additional parameters always before the control loop, NEVER in the control loop!
     // Set collision behavior.
     setDefaultBehavior();
-    Payload zero_payload = Payloads::Sphere(0, 0, {0, 0, 0});
-    setLoad(zero_payload);
+//    Payload zero_payload = Payloads::Sphere(0, 0, {0, 0, 0});
+//    setLoad(zero_payload);
 }
 
 void Robot::setDefaultBehavior() {

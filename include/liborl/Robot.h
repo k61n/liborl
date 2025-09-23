@@ -30,8 +30,10 @@ namespace orl {
         /**
          * Establishes a connection to the Franka robot and sets collision and force thresholds
          * @param robot_name name or IP of the Franka robot
+         * @param[in] realtime_config if set to Enforce, an exception will be thrown if realtime priority
+         * cannot be set when required. Setting realtime_config to Ignore disables this behavior.
          */
-        explicit Robot(const std::string &robot_name);
+        explicit Robot(const std::string &robot_name, franka::RealtimeConfig realtime_config);
 
         /**
          * gets the current End-Effector Pose
