@@ -1,3 +1,10 @@
+liborl (0.4.3) unstable; urgency=medium
+
+  * liborl's Robot object accepts real-time config as parameter
+  * liborl hides boost and eigen imports
+
+ -- Konstantin Kholostov <k.kholostov@fz-juelich.de>  Thu, 25 Sep 2025 16:30:00 +0200
+
 liborl (0.4.2) unstable; urgency=medium
 
   * Maintenance update
