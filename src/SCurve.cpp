@@ -1,5 +1,8 @@
 // Copyright (c) 2020 Marco Boneberger
 // Licensed under the EUPL-1.2-or-later
+#include <functional>
+#include <cmath>
+
 #include <liborl/SCurve.h>
 
 using namespace std;

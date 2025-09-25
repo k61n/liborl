@@ -4,9 +4,11 @@
  * Implementation of Generator functions
  */
 
+#include <iostream>
+
+#include <liborl/geometry_math.h>
 #include <liborl/PoseGenerator.h>
 #include <liborl/SpeedProfile.h>
-#include <liborl/geometry_math.h>
 
 using namespace orl;
 

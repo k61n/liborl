@@ -12,12 +12,6 @@
 #ifndef QUINTICPOLYNOMIAL_HPP
 #define QUINTICPOLYNOMIAL_HPP
 
-#ifdef __linux__
-#include <eigen3/Eigen/Core>
-#elif __APPLE__
-#include <Eigen/Core>
-#endif
-
 template<class T>
 class QuinticPolynomial {
 public:

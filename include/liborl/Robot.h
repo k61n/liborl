@@ -9,13 +9,9 @@
 #ifndef LIBORL_ROBOT_H
 #define LIBORL_ROBOT_H
 
-#include <liborl/enums.h>
-#include <boost/optional.hpp>
-#include <franka/robot.h>
 #include <franka/gripper.h>
 #include <franka/model.h>
-#include <liborl/Pose.h>
-#include <liborl/PoseGenerator.h>
+
 #include <liborl/Payload.h>
 #include <liborl/StopCondition.h>
 

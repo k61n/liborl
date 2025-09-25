@@ -1,14 +1,9 @@
 // Copyright (c) 2020 Marco Boneberger
 // Licensed under the EUPL-1.2-or-later
 #include <thread>
-#include <liborl/liborl.h>
-#include <franka/exception.h>
-#include "QuinticPolynomial.hpp"
-#include <liborl/Robot.h>
-#include <liborl/geometry_math.h>
-#include <boost/optional.hpp>
-#include <liborl/Payload.h>
+
 #include "examples_common.h"
+#include <liborl/liborl.h>
 
 using namespace orl;
 

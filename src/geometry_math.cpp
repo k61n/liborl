@@ -3,9 +3,10 @@
 /*
  * Implementation of Useful functions to calculate basic geometric values
  */
-#include <liborl/geometry_math.h>
-#include <vector>
+
 #include <boost/math/special_functions/factorials.hpp>
+
+#include <liborl/geometry_math.h>
 
 using boost::math::factorial;
 

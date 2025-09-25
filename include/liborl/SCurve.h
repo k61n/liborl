@@ -9,10 +9,7 @@
 #ifndef LIBORL_SCURVE_H
 #define LIBORL_SCURVE_H
 
-#include <cmath>
-#include <functional>
 #include <sstream>
-
 
 namespace SCurve {
 

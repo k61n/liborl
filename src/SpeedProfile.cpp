@@ -2,7 +2,6 @@
 // Licensed under the EUPL-1.2-or-later
 #include <liborl/SpeedProfile.h>
 #include "QuinticPolynomial.hpp"
-#include <liborl/SCurve.h>
 
 using namespace orl;
 
