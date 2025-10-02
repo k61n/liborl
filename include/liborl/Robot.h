@@ -100,7 +100,8 @@ namespace orl {
          * @param max_time duration of the trajectory in seconds
          * @param stop_condition a Stop condition which stops the movement
          */
-        void cart_motion(const Pose &dest, double max_time = 10,
+        void cart_motion(const std::function<void(const franka::RobotState&)>& callback,
+                         const Pose &dest, double max_time = 10,
                          const boost::optional<StopCondition> &stop_condition = boost::none);
 
         /**

@@ -17,10 +17,12 @@ Robot::relative_cart_motion(const std::function<void(const franka::RobotState&)>
 }
 
 
-void Robot::cart_motion(const Pose &dest, const double max_time, const boost::optional<StopCondition> &stop_condition) {
+void Robot::cart_motion(const std::function<void(const franka::RobotState&)>& callback,
+                        const Pose &dest, const double max_time, const boost::optional<StopCondition> &stop_condition)
+{
     PoseGenerator pose_generator = PoseGenerators::MoveToPose(dest);
     apply_speed_profile(pose_generator);
-    move_cartesian(pose_generator, max_time, stop_condition);
+    move_cartesian(pose_generator, max_time, stop_condition, boost::none, callback);
 }
 
 
