@@ -1,3 +1,9 @@
+liborl (0.4.4) unstable; urgency=medium
+
+  * Pass callback function also to robot::cart_motion
+
+ -- Konstantin Kholostov <k.kholostov@fz-juelich.de>  Wed, 3 Dec 2025 16:47:00 +0200
+
 liborl (0.4.3) unstable; urgency=medium
 
   * liborl's Robot object accepts real-time config as parameter
