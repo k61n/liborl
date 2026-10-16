@@ -9,6 +9,8 @@ find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED CONFIG)
 find_package(Franka REQUIRED)
 message(STATUS "libfranka version: ${Franka_VERSION}")
+message(STATUS "boost include dirs: ${Boost_INCLUDE_DIRS}")
+message(STATUS "Eigen3 version: ${Eigen3_VERSION}")
 
 add_library(orl SHARED
     3rdparty/libfranka/examples_common.cpp
@@ -31,15 +33,14 @@ set_target_properties(orl PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     OUTPUT_NAME "orl"
-    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS};${EIGEN3_INCLUDE_DIR}"
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
 )
 target_include_directories(orl PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/libfranka/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>
 )
-target_link_libraries(orl PUBLIC Franka::Franka)
+target_link_libraries(orl PUBLIC Franka::Franka Eigen3::Eigen)
 include(GNUInstallDirs)
 set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/orl)
 install(DIRECTORY include/liborl/
